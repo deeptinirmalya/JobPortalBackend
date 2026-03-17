@@ -265,7 +265,7 @@ def analyze_resume(application_id):
 
     except Exception as e:
         print("error: ", str(e))
-        return jsonify({"error": str(e)})
+        return jsonify({"error": "Error happen"})
     finally:
         cur.close()
         db.close()
@@ -300,7 +300,7 @@ def approve_application(application_id):
 
     except Exception as e:
         db.rollback()
-        return jsonify({"error", str(e)})
+        return jsonify({"error", "Error happen"})
     
     finally:
         cur.close()
@@ -326,7 +326,7 @@ def reject_application(application_id):
         if not res:
             return jsonify({"error": "APPLICATION_NOT_FOUND"}), 404
         
-        if res["application_status"] == "applied":
+        if res["application_status"] == "rejected":
             return jsonify({"msg": "Action Not Allow"}), 403
                 
         cur.execute("UPDATE job_applications SET application_status=%s WHERE id=%s",("rejected", application_id))
@@ -337,7 +337,7 @@ def reject_application(application_id):
 
     except Exception as e:
         db.rollback()
-        return jsonify({"error", str(e)})
+        return jsonify({"error", "Error happen"})
     
     finally:
         cur.close()
@@ -362,7 +362,22 @@ def company_jobs():
             return jsonify({"res": "No Job Found"})
     except Exception as e:
         print("error:==", str(e))
-        return jsonify({"err", str(e)})
+        return jsonify({"err", "error happen"})
+    finally:
+        cur.close()
+        db.close()
+
+@company_bp.route("/applications/<int:application_id>", methods=["GET"])
+@token_required
+@role_required("company")
+def applications(application_id):
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+    except Exception as e:
+        print("error: ===", str(e))
+        return jsonify({"err": "Error happen"})
     finally:
         cur.close()
         db.close()
