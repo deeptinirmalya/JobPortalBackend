@@ -1,8 +1,9 @@
 from utils.utils import current_time_date, send_mail, generate_url_code, verify_phone_number, validate_email_adress
 from werkzeug.security import generate_password_hash, check_password_hash
-from security.jwt_utils import token_required
 from flask_limiter.util import get_remote_address
 from database.database import get_db_connection
+from logger_config.loger_config import get_logger
+from security.jwt_utils import token_required
 from security.jwt_utils import generate_token
 from flask import Flask, request, jsonify
 from flask_limiter import Limiter
@@ -24,6 +25,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+
+# -------------------- LOGER CONFIG --------------------
+logger = get_logger()
 
 # ------------------- BLUE PRINT REGISTRATIION --------------------------
 from auth.auth import auth_bp
@@ -55,6 +59,26 @@ def add_security_headers(response):
     response.headers["Content-Security-Policy"] = "default-src 'self'"
     return response
 
+
+
+# ===================== LOGGING FOR FLASK DEBUGGING =====================
+
+@app.before_request
+def log_request():
+    print(f"\n{request.method} {request.path}")
+
+
+@app.after_request
+def log_response(response):
+    print(f"\nResponse: {response.status}")
+    return response
+
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    print(f"\nERROR: {str(e)}")
+    return jsonify({"error": "Internal error"}), 500
+
 #-------------------------- END-POINT SECTION START -------------------------------------------
 
 
@@ -62,14 +86,17 @@ def add_security_headers(response):
 
 @app.route("/health", methods=["GET"])
 def test_db():
+    logger.info("health cheeck")
     db = get_db_connection()
     if db and db.is_connected():
         try:
+            print("dsjkfhjkdhfjkhsdgfjksd")
             cursor = db.cursor()
             cursor.execute("SELECT 1")
             cursor.fetchone()
             return jsonify({"status": "✅ Database Connection Successful!"}), 200
         except Error as e:
+            logger.error(f"Error: {str(e)}")
             return jsonify({"status": "❌ Query Failed", "error": str(e)}), 500
         finally:
             cursor.close()
@@ -89,6 +116,7 @@ def test_db():
 # )
 @limiter.limit("5 per minute")
 def login():
+    logger.info("login")
     db = None
     cur = None
 
@@ -163,6 +191,7 @@ def login():
             
             
         except Exception as e:
+            logger.error(f"Email send error: {str(e)}")
             print("Email failed:", e)
 
         return jsonify({
@@ -172,6 +201,7 @@ def login():
         }), 200
 
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         print("LOGIN ERROR:", e)
         return jsonify({"error": "Internal server error"}), 500
 
@@ -181,6 +211,7 @@ def login():
 
 @app.route("/signup", methods=["POST"])
 def sign_up():
+    logger.info("Signup")
     data = request.get_json(silent=True)
     print(data)
 
@@ -215,6 +246,7 @@ def sign_up():
             return jsonify({"message": "The phone number is already exist"})
         
     except Exception:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"message": "Internal server error or busy now"})
     finally:
         if db and db.is_connected():
@@ -235,13 +267,13 @@ def sign_up():
             else:
                 continue
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"error": f"{str(e)}"})
     finally:
         cur.close()
         db.close()
             
 
-    # verify the email by funtion and also the phone
     verify_email = validate_email_adress(email)
     if not verify_email["status"]:
         return jsonify({"message": "Invalid email adress"}), 400
@@ -272,7 +304,7 @@ def sign_up():
         db.commit()
 
     except Exception as e:
-        print(str(e))
+        logger.error(f"Error: {str(e)}")
         return jsonify({"message": "Internal server error"}), 500
 
     finally:
@@ -289,9 +321,7 @@ def sign_up():
 @app.route("/logout", methods=["POST"])
 @token_required
 def logout():
-    """
-    Revokes the current token by adding its JTI to the blacklist.
-    """
+    logger.info("logout")
     db = get_db_connection()
     cur = db.cursor()
 
@@ -305,12 +335,13 @@ def logout():
         return jsonify({"message": "Successfully logged out. Token revoked."}), 200
 
     except Exception as e:
-        # In case of database errors
+        logger.error(f"Error: {str(e)}")
         return jsonify({"error": "Logout failed", "details": str(e)}), 500
 
     finally:
         cur.close()
         db.close()
+
 
 
 
@@ -327,9 +358,13 @@ def logout():
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    # app.run(debug=True)
     # app.run(host="127.0.0.1", port=5000, debug=True)
 
 
-    # print("🚀 Server starting on http://127.0.0.1:5000")
-    # serve(app, host="127.0.0.1", port=5000)
+    logger.info("Server starting on http://127.0.0.1:5000")
+    print("Server starting on http://127.0.0.1:5000")
+    serve(app, host="127.0.0.1", port=5000)
+
+    # python -m watchdog.watchmedo auto-restart --patterns="*.py" --recursive -- python app.py   
+    # run commant for devlopement

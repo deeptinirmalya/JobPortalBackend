@@ -1,10 +1,14 @@
 from flask import Blueprint, jsonify, redirect
 from database.database import get_db_connection
+from logger_config.loger_config import get_logger
 
 auth_bp = Blueprint('auth', __name__)
 
+logger = get_logger()
+
 @auth_bp.route('/verify-email/<token>', methods=['GET'])
 def email_verify(token):
+    logger.info("email verify token generator")
     if not token:
         return jsonify({"message": "Invalid verification link"}), 400
 
@@ -36,6 +40,7 @@ def email_verify(token):
         return redirect("https://verify-email-deepti.netlify.app/")
 
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         print("VERIFY EMAIL ERROR:", e)
         return jsonify({"message": "Server error"}), 500
 

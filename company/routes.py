@@ -1,10 +1,14 @@
-from flask import Blueprint, jsonify, request
-from database.database import get_db_connection
 from utils.utils import current_time_date, upload_image, send_mail, current_date, check_image_size, analyze_resume_from_url
 from security.jwt_utils import token_required, role_required
-import base64
+from database.database import get_db_connection
+from logger_config.loger_config import get_logger
+from flask import Blueprint, jsonify, request
 import email_templates.templates
+import base64
+
 company_bp = Blueprint('company', __name__)
+
+logger = get_logger()
 
 # done -----------------------------
 @company_bp.route('/company_info', methods=['POST'])
@@ -371,9 +375,15 @@ def company_jobs():
 @token_required
 @role_required("company")
 def applications(application_id):
+    compny_id = request.user_id
     try:
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
+
+        cur.execute("""SELECT
+                    u.full_name AS name,
+                    u.email AS email,
+                    u.""")
 
     except Exception as e:
         print("error: ===", str(e))

@@ -2,10 +2,13 @@ from flask import Blueprint, jsonify, request
 from database.database import get_db_connection
 from utils.utils import current_time_date, upload_image, check_image_size
 from security.jwt_utils import token_required, role_required
+from logger_config.loger_config import get_logger
 
 
 
 content_bp = Blueprint('content', __name__)
+
+logger = get_logger()
 
 @content_bp.route('/image_post', methods=['POST'])
 @token_required

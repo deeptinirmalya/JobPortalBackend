@@ -2,9 +2,11 @@ from flask import Blueprint, jsonify, request
 from database.database import get_db_connection
 from utils.utils import current_time_date, upload_image, send_mail, current_date, current_time, check_image_size, upload_resume
 from security.jwt_utils import token_required, role_required
+from logger_config.loger_config import get_logger
 
 seeker_bp = Blueprint('seeker', __name__)
 
+logger = get_logger()
 
 @seeker_bp.route('/per_info', methods=['POST'])
 @token_required

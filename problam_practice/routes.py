@@ -2,12 +2,13 @@ from utils.utils import current_date, current_time_date
 from database.database import get_db_connection
 from flask import Blueprint, jsonify, request
 from security.jwt_utils import token_required, role_required
+from logger_config.loger_config import get_logger
 import random
 import requests
 
 problam_bp = Blueprint('problem', __name__)
 
-
+logger = get_logger()
 
 @problam_bp.route('/get_problem', methods=['POST'])
 @token_required

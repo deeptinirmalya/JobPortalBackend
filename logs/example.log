@@ -1,0 +1,13 @@
+=============================== EXAMPLE LOGS =========================================
+
+
+2026-03-18 20:40:55,966 | INFO | POST /login | login
+2026-03-18 20:41:16,090 | INFO | N/A N/A | Server starting on http://127.0.0.1:5000
+2026-03-18 20:41:29,937 | INFO | POST /login | login
+2026-03-18 20:41:57,841 | INFO | N/A N/A | Server starting on http://127.0.0.1:5000
+2026-03-18 20:44:08,340 | INFO | N/A N/A | Server starting on http://127.0.0.1:5000
+2026-03-18 20:44:16,523 | INFO | POST /login | login
+2026-03-18 20:45:02,880 | INFO | POST /login | login
+2026-03-18 20:45:23,218 | INFO | N/A N/A | Server starting on http://127.0.0.1:5000
+2026-03-18 20:45:32,655 | INFO | POST /login | login
+2026-03-18 20:45:46,492 | INFO | POST /login | login
