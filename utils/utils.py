@@ -2,6 +2,7 @@ from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
 from datetime import datetime
 import cloudinary.uploader
+import cloudinary
 import base64
 import requests
 import json
@@ -47,7 +48,7 @@ def send_mail(subject, body, reciver_email, body_tipe):
 def check_image_size(image_base64: str) -> bool:
     MAX_SIZE = 3 * 1024 * 1024  # 3MB
     try:
-        # Remove data URL prefix if present
+
         if ',' in image_base64:
             image_base64 = image_base64.split(',')[1]
 
@@ -58,14 +59,22 @@ def check_image_size(image_base64: str) -> bool:
     
         return False
 
-import cloudinary.uploader
+#======================================== FOR running server using "serve" ==============================================
+
 
 def upload_image(image_base64: str) -> str:
+    if not cloudinary.config().api_key:
+        cloudinary.config(
+            cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+            api_key=os.getenv("CLOUDINARY_API_KEY"),
+            api_secret=os.getenv("CLOUDINARY_API_SECRET")
+        )
+
     if not image_base64:
         raise ValueError("Image data missing")
 
     try:
-
+        # Normalize base64 (handle both raw + full data URI)
         if not image_base64.startswith("data:image"):
             image_base64 = f"data:image/jpeg;base64,{image_base64}"
 
@@ -81,18 +90,71 @@ def upload_image(image_base64: str) -> str:
         raise RuntimeError(f"Upload failed: {str(e)}")
 
 
+
+
 def upload_resume(image_base64: str) -> str:
+    if not cloudinary.config().api_key:
+        cloudinary.config(
+            cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+            api_key=os.getenv("CLOUDINARY_API_KEY"),
+            api_secret=os.getenv("CLOUDINARY_API_SECRET")
+        )
 
-    if ',' in image_base64:
-        image_base64 = image_base64.split(',')[1]
+    if not image_base64:
+        raise ValueError("Image data missing")
 
-    result = cloudinary.uploader.upload(
-        f"data:image/jpeg;base64,{image_base64}",
-        folder="uploads"
-    )
+    # Normalize base64 format
+    if not image_base64.startswith("data:image"):
+        image_base64 = f"data:image/jpeg;base64,{image_base64}"
 
-    return result["secure_url"]
+    try:
+        result = cloudinary.uploader.upload(
+            image_base64,
+            folder="uploads",
+            resource_type="image"
+        )
+
+        return result["secure_url"]
+
+    except Exception as e:
+        raise RuntimeError(f"Upload failed: {str(e)}")
     
+#=======================================================================================
+
+
+# def upload_image(image_base64: str) -> str:
+#     if not image_base64:
+#         raise ValueError("Image data missing")
+
+#     try:
+
+#         if not image_base64.startswith("data:image"):
+#             image_base64 = f"data:image/jpeg;base64,{image_base64}"
+
+#         result = cloudinary.uploader.upload(
+#             image_base64,
+#             folder="uploads",
+#             resource_type="image"
+#         )
+
+#         return result["secure_url"]
+
+#     except Exception as e:
+#         raise RuntimeError(f"Upload failed: {str(e)}")
+
+
+# def upload_resume(image_base64: str) -> str:
+
+#     if ',' in image_base64:
+#         image_base64 = image_base64.split(',')[1]
+
+#     result = cloudinary.uploader.upload(
+#         f"data:image/jpeg;base64,{image_base64}",
+#         folder="uploads"
+#     )
+
+#     return result["secure_url"]
+
 
 def generate_url_code():
     length = secrets.choice(range(12, 16))

@@ -235,6 +235,66 @@ def view_company_info():
 
 
 
+@company_bp.route("/company_jobs", methods = ["GET"])
+@token_required
+@role_required("company")
+def company_jobs():
+    company_id = int(request.user_id)
+
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("SELECT title, number_of_applications, created_at, close_on FROM jobs WHERE company_id=%s, AND status=%s",(company_id, "open"))
+        res = cur.fetchall()
+        if res:
+            return jsonify({"res": res})
+        else:
+            return jsonify({"res": "No Job Found"})
+    except Exception as e:
+        print("error:==", str(e))
+        return jsonify({"err", "error happen"})
+    finally:
+        cur.close()
+        db.close()
+
+@company_bp.route("/applications/<int:job_id>", methods=["GET"])
+@token_required
+@role_required("company")
+def applications_per_job(job_id):
+    logger.info("applications_per_job")
+
+    company_id = request.user_id
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("""
+            SELECT
+                a.id AS application_id,
+                u.full_name AS name,
+                u.email,
+                a.message,
+                a.applied_at
+            FROM job_applications a
+            JOIN users u ON a.job_seeker_id = u.id
+            JOIN jobs j ON a.job_id = j.id
+            WHERE a.job_id = %s
+            AND j.company_id = %s
+            ORDER BY a.applied_at DESC
+        """, (job_id, company_id))
+        res = cur.fetchall()
+
+        return jsonify({"res": res})
+
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        print("error: ===", str(e))
+        return jsonify({"err": "Error happen"})
+    finally:
+        cur.close()
+        db.close()
+
 
 #analzee  aapplication resume :-
 @company_bp.route("/analyze_resume/<int:application_id>", methods = ["GET"])
@@ -348,46 +408,3 @@ def reject_application(application_id):
         db.close()
 
 
-@company_bp.route("/company_jobs", methods = ["GET"])
-@token_required
-@role_required("company")
-def company_jobs():
-    company_id = int(request.user_id)
-
-    try:
-        db = get_db_connection()
-        cur = db.cursor(dictionary=True)
-
-        cur.execute("SELECT title, number_of_applications, created_at, close_on FROM jobs WHERE company_id=%s, AND status=%s",(company_id, "open"))
-        res = cur.fetchall()
-        if res:
-            return jsonify({"res": res})
-        else:
-            return jsonify({"res": "No Job Found"})
-    except Exception as e:
-        print("error:==", str(e))
-        return jsonify({"err", "error happen"})
-    finally:
-        cur.close()
-        db.close()
-
-@company_bp.route("/applications/<int:application_id>", methods=["GET"])
-@token_required
-@role_required("company")
-def applications(application_id):
-    compny_id = request.user_id
-    try:
-        db = get_db_connection()
-        cur = db.cursor(dictionary=True)
-
-        cur.execute("""SELECT
-                    u.full_name AS name,
-                    u.email AS email,
-                    u.""")
-
-    except Exception as e:
-        print("error: ===", str(e))
-        return jsonify({"err": "Error happen"})
-    finally:
-        cur.close()
-        db.close()

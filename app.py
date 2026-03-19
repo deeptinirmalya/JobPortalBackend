@@ -63,20 +63,34 @@ def add_security_headers(response):
 
 # ===================== LOGGING FOR FLASK DEBUGGING =====================
 
+from colorama import Fore, Style, init
+init(autoreset=True)
+
 @app.before_request
 def log_request():
-    print(f"\n{request.method} {request.path}")
+    print(Fore.CYAN + f"\n[REQUEST] {request.method} {request.path} | IP: {request.remote_addr}")
+    # print(Fore.CYAN+f"\n{request.method} {request.path}")
 
 
 @app.after_request
 def log_response(response):
-    print(f"\nResponse: {response.status}")
+    status_code = response.status_code
+
+    if status_code >= 500:
+        color = Fore.RED
+    elif status_code >= 400:
+        color = Fore.YELLOW
+    else:
+        color = Fore.GREEN
+
+    print(color + f"\n[RESPONSE] {response.status} / {request.method} {request.path}" + Style.RESET_ALL)
+
     return response
 
 
 @app.errorhandler(Exception)
 def handle_error(e):
-    print(f"\nERROR: {str(e)}")
+    print(Fore.RED + f"\nERROR: {str(e)}")
     return jsonify({"error": "Internal error"}), 500
 
 #-------------------------- END-POINT SECTION START -------------------------------------------
@@ -182,7 +196,7 @@ def login():
             status=user["status"]
         )
 
-        print(f"\n\n{token}\n\n")
+        print(f"\n\nTOKEN CREATED SUCESSFULLY\n\n")
 
         # send alert in email
         try:

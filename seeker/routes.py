@@ -430,7 +430,7 @@ def apply_on_job():
         cur = db.cursor(dictionary=True)
 
         cur.execute("SELECT status FROM jobs WHERE id=%s",(job_id,))
-        re = cur.fetchone()
+        res = cur.fetchone()
         if res["status"] != "open":
             return jsonify({"msg": "Not Allow for this job"}), 409
         
