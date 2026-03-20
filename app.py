@@ -35,6 +35,7 @@ from seeker.routes import seeker_bp
 from company.routes import company_bp
 from content_post.routes import content_bp
 from problam_practice.routes import problam_bp
+from interview.routes import interview_bp
 
 
 app.register_blueprint(auth_bp, url_prefix='/api')
@@ -42,6 +43,7 @@ app.register_blueprint(seeker_bp, url_prefix='/seeker')
 app.register_blueprint(company_bp, url_prefix='/company')
 app.register_blueprint(content_bp, url_prefix='/content')
 app.register_blueprint(problam_bp, url_prefix='/problem')
+app.register_blueprint(interview_bp, url_prefix='/technical_round')
 
 
 # -------------------- RATE LIMITER --------------------
@@ -372,13 +374,13 @@ def logout():
 
 if __name__ == "__main__":
 
-    # app.run(debug=True)
+    app.run(debug=True)
     # app.run(host="127.0.0.1", port=5000, debug=True)
 
 
-    logger.info("Server starting on http://127.0.0.1:5000")
-    print("Server starting on http://127.0.0.1:5000")
-    serve(app, host="127.0.0.1", port=5000)
+    # logger.info("Server starting on http://127.0.0.1:5000")
+    # print("Server starting on http://127.0.0.1:5000")
+    # serve(app, host="127.0.0.1", port=5000)
 
     # python -m watchdog.watchmedo auto-restart --patterns="*.py" --recursive -- python app.py   
     # run commant for devlopement

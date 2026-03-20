@@ -308,7 +308,7 @@ def analyze_resume(application_id):
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("SELECT * FROM job_applications WHERE id=%s",(application_id,))
+        cur.execute("SELECT job_id FROM job_applications WHERE id=%s",(application_id,))
         res = cur.fetchone()
 
         if not res:
@@ -342,6 +342,7 @@ def approve_application(application_id):
 
     if getattr(request, "status", None) != "verified":
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
+    
     
     try:
         db = get_db_connection()
