@@ -219,6 +219,7 @@ def view_posts():
         )
 
         posts = cur.fetchall()
+        print(posts)
         return jsonify({
             "page": page,
             "limit": limit,
@@ -228,6 +229,30 @@ def view_posts():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        cur.close()
+        db.close()
+
+
+@content_bp.route("/view_all_posts", methods=["GET"])
+@token_required
+@role_required("seeker", "company")
+def view_all_posts():
+    user_id = request.user_id
+    logger.info(f"/view_all_posts of {user_id}")
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("SELECT * FROM photo_posts WHERE user_id=%s",(user_id,))
+        res = cur.fetchall()
+
+        return jsonify({"res": res})
+
+
+    except Exception as e:
+        logger.error(f"Error {str(e)}")
+        return jsonify({"err": str(e)})
     finally:
         cur.close()
         db.close()

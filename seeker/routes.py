@@ -16,7 +16,7 @@ def seeker_personal_info():
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
 
     data = request.get_json(silent=True)
-    print(data)
+    # print(data)
     if not data:
         return jsonify({"message": "All data required"}), 400
     
@@ -439,7 +439,7 @@ def apply_on_job():
         if res:
             return jsonify({"message": "Already apply"}), 409
         
-        cur.execute("INSERT INTO job_applications(job_id, job_seeker_id, message, resume, applied_at) VALUEs (%s, %s, %s, %s, %s)",
+        cur.execute("INSERT INTO job_applications(job_id, job_seeker_id, message, resume, applied_at) VALUES (%s, %s, %s, %s, %s)",
                     (job_id, request.user_id, message, resume_url, current_date()))
         
         cur.execute("UPDATE jobs SET number_of_applications = number_of_applications+1 WHERE id =%s",(job_id,))
@@ -461,9 +461,6 @@ def apply_on_job():
         print("complete...............🌿🌿🌿🌿")
         cur.close()
         db.close()
-
-
-
 
 
 # delet skill
@@ -525,6 +522,31 @@ def job_openings():
     except Exception as e:
         print("error", str(e))
         return jsonify({"error": str(e)})
+    finally:
+        cur.close()
+        db.close()
+
+
+@seeker_bp.route("/view_job_details/<int:job_id>", methods=["GET"])
+@token_required
+@role_required("seeker")
+def view_job_details(job_id):
+    logger.info(f"seeker /view_job_details/{job_id}")
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("SELECT j.*, u.full_name FROM jobs j JOIN users u ON j.company_id = u.id WHERE j.id=%s",(job_id,))
+        res = cur.fetchone()
+
+        if not res:
+            return jsonify({"res": "No Job Found"}), 404
+        
+        return jsonify({"res": res}), 200
+
+    except Exception as e:
+        logger.error(f"Error : {str(e)}")
+        return jsonify({"err": str(e)})
     finally:
         cur.close()
         db.close()

@@ -341,6 +341,7 @@ def analyze_resume(application_id):
 @token_required
 @role_required("company")
 def approve_application(application_id):
+    logger.info(f"/approve_application/{application_id}")
 
     if getattr(request, "status", None) != "verified":
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
@@ -367,6 +368,7 @@ def approve_application(application_id):
 
     except Exception as e:
         db.rollback()
+        logger.error(f"Error: {str(e)}")
         return jsonify({"error", "Error happen"})
     
     finally:
@@ -409,5 +411,4 @@ def reject_application(application_id):
     finally:
         cur.close()
         db.close()
-
 
