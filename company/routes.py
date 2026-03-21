@@ -308,11 +308,13 @@ def analyze_resume(application_id):
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("SELECT job_id FROM job_applications WHERE id=%s",(application_id,))
+        cur.execute("SELECT job_id, application_status, resume FROM job_applications WHERE id=%s",(application_id,))
         res = cur.fetchone()
 
         if not res:
             return jsonify({"msg": "application not found"})
+        
+        print("application status:  ",res["application_status"])
         
         cur.execute("SELECT company_id FROM jobs WHERE id=%s",(int(res["job_id"]),))
         r = cur.fetchone()
@@ -320,8 +322,8 @@ def analyze_resume(application_id):
             return jsonify({"msg": "not allow"}), 403
         
 
-        if res["application_status"] == "rejected":
-            return jsonify({"msg": "the application is rejected"}), 400
+        if res["application_status"] != "applied":
+            return jsonify({"msg": "Action not allowed"}), 400
         
         ressult = analyze_resume_from_url(res["resume"])
 

@@ -374,13 +374,13 @@ def logout():
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    # app.run(debug=True)
     # app.run(host="127.0.0.1", port=5000, debug=True)
 
 
-    # logger.info("Server starting on http://127.0.0.1:5000")
-    # print("Server starting on http://127.0.0.1:5000")
-    # serve(app, host="127.0.0.1", port=5000)
+    logger.info("Server starting on http://127.0.0.1:5000")
+    print("Server starting on http://127.0.0.1:5000")
+    serve(app, host="127.0.0.1", port=5000)
 
     # python -m watchdog.watchmedo auto-restart --patterns="*.py" --recursive -- python app.py   
     # run commant for devlopement
