@@ -533,7 +533,230 @@ def company_details_uploaded():
     
     return result
 
+def company_approved(name, time):
+    # Professional Subject Line
+    subject = f"Dear {name}, your company is approved by HireNest"
+    
+    # HTML Body with a modern, corporate aesthetic
+    body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background-color: #f4f7f9;
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            }}
+            .email-wrapper {{
+                width: 100%;
+                background-color: #f4f7f9;
+                padding: 40px 0;
+            }}
+            .content-card {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }}
+            .status-banner {{
+                background-color: #00c853; /* Success Green */
+                color: #ffffff;
+                padding: 30px;
+                text-align: center;
+            }}
+            .main-body {{
+                padding: 40px;
+                color: #2c3e50;
+                line-height: 1.8;
+            }}
+            .company-name {{
+                font-size: 22px;
+                color: #1a73e8;
+                font-weight: bold;
+            }}
+            .timestamp {{
+                display: inline-block;
+                background: #f1f3f4;
+                padding: 5px 12px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-top: 10px;
+            }}
+            .footer {{
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #95a5a6;
+            }}
+            .btn {{
+                display: inline-block;
+                padding: 12px 25px;
+                background-color: #1a73e8;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                margin-top: 20px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-wrapper">
+            <div class="content-card">
+                <div class="status-banner">
+                    <h1 style="margin:0;">Verification Approved</h1>
+                </div>
+                <div class="main-body">
+                    <p>Dear <span class="company-name">{name}</span>,</p>
+                    
+                    <p>We are pleased to inform you that your profile has been successfully 
+                    <strong>verified</strong> and <strong>approved</strong> by the HireNest administration team.</p>
+                    
+                    <p>Our platform has reviewed your credentials and confirmed your company's 
+                    eligibility to connect with our network of professionals.</p>
 
+                    <div class="timestamp">
+                        Approved on: {time}
+                    </div>
+
+                    <p style="margin-top: 30px;">You can now start posting job vacancies, searching for candidates, 
+                    and building your employer brand immediately.</p>
+                    
+                    <a href="https://hirenest.com/login" class="btn">Access Your Dashboard</a>
+
+                    <p style="margin-top: 40px;">Best regards,<br>
+                    <strong>The HireNest Verification Team</strong></p>
+                </div>
+                <div class="footer">
+                    &copy; 2026 HireNest Platform. All rights reserved.<br>
+                    If you did not request this, please ignore this email.
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    result = {
+    "subject": subject,
+    "body": body
+    }
+    
+    return result
+
+
+
+def reject_company(name, time, reason):
+    # Professional Subject Line
+    subject = f"Update regarding your company verification on HireNest"
+    
+    # HTML Body with a professional, clear layout
+    body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background-color: #f4f7f9;
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            }}
+            .email-wrapper {{
+                width: 100%;
+                background-color: #f4f7f9;
+                padding: 40px 0;
+            }}
+            .content-card {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            }}
+            .status-banner {{
+                background-color: #ff9800; /* Warning Orange */
+                color: #ffffff;
+                padding: 30px;
+                text-align: center;
+            }}
+            .main-body {{
+                padding: 40px;
+                color: #2c3e50;
+                line-height: 1.8;
+            }}
+            .company-name {{
+                font-size: 20px;
+                color: #d32f2f;
+                font-weight: bold;
+            }}
+            .reason-box {{
+                background-color: #fff3e0;
+                border-left: 4px solid #ff9800;
+                padding: 20px;
+                margin: 20px 0;
+                font-style: italic;
+                color: #e65100;
+            }}
+            .footer {{
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #95a5a6;
+            }}
+            .contact-link {{
+                color: #1a73e8;
+                text-decoration: none;
+                font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-wrapper">
+            <div class="content-card">
+                <div class="status-banner">
+                    <h1 style="margin:0;">Verification Update</h1>
+                </div>
+                <div class="main-body">
+                    <p>Dear <span class="company-name">{name}</span>,</p>
+                    
+                    <p>Thank you for your interest in joining the HireNest platform. Our administration team has completed the review of your company profile submitted on <strong>{time}</strong>.</p>
+                    
+                    <p>At this time, we are <strong>unable to approve</strong> your company account due to the following reason:</p>
+                    
+                    <div class="reason-box">
+                        "{reason}"
+                    </div>
+
+                    <p>If you believe this was an error, or if you can provide the missing information, please log in to your dashboard to update your details or reach out to our support team.</p>
+                    
+                    <p style="margin-top: 40px;">Best regards,<br>
+                    <strong>The HireNest Compliance Team</strong></p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 13px;">Questions? Visit our <a href="#" class="contact-link">Help Center</a> or contact support.</p>
+                </div>
+                <div class="footer">
+                    &copy; 2026 HireNest Platform. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    result = {
+    "subject": subject,
+    "body": body
+    }
+
+    return result
 # Example usage:
 # email_body = company_details_uploaded()
 # send_email(to=company_email, subject="Thank You - Details Uploaded Successfully", body=email_body)

@@ -160,10 +160,8 @@ def view_comments():
             SELECT
                 c.comment_text,
                 u.full_name,
-                sp.name
             FROM photo_post_comments c
             JOIN users u ON u.id = c.user_id
-            JOIN seeker_personal_info sp ON sp.seeker_id = c.user_id
             WHERE c.post_id = %s
             AND c.status = %s
             ORDER BY c.id DESC
@@ -196,27 +194,23 @@ def view_posts():
         cur = db.cursor(dictionary=True)
 
         cur.execute(
-            """
-            SELECT
-                p.id,
-                p.user_id,
-                p.photo_url,
-                p.caption,
-                p.like_count,
-                p.comment_count,
-                p.created_at,
-                u.full_name,
-                sp.name,
-                sp.photo AS user_photo
-            FROM photo_posts p
-            JOIN users u ON u.id = p.user_id
-            JOIN seeker_personal_info sp ON sp.seeker_id = p.user_id
-            WHERE p.status = %s
-            ORDER BY p.id DESC
-            LIMIT %s OFFSET %s
-            """,
-            ("public", limit, offset)
-        )
+                    """
+                    SELECT 
+                        p.id, 
+                        p.user_id, 
+                        p.photo_url, 
+                        p.caption, 
+                        p.like_count, 
+                        p.comment_count, 
+                        u.full_name 
+                    FROM photo_posts p
+                    JOIN users u ON u.id = p.user_id
+                    WHERE p.status = %s
+                    ORDER BY p.id DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    ("public", limit, offset)
+                )
 
         posts = cur.fetchall()
         print(posts)

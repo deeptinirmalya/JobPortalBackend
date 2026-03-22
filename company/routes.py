@@ -258,6 +258,37 @@ def company_jobs():
         cur.close()
         db.close()
 
+@company_bp.route("/close_job/<int:job_id>", methods = ["GET"])
+@token_required
+@role_required("company")
+def close_job(job_id):
+    company_id = request.user_id
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+        cur.execute("SELECT company_id, status FROM jobs WHERE id=%s",(job_id,))
+        res = cur.fetchone()
+
+        if company_id != res["company_id"]:
+            return jsonify({"err": "Action Not Allow"})
+        
+        if res["status"] != "open":
+            return jsonify({"err": "Action Not Allow"})
+        
+        cur.execute("UPDATE jobs SET status=%s WHERE id=%s",("closed", job_id))
+        cur.execute("UPDATE job_applications SET application_status=%s WHERE id=%s",("rejected", job_id))
+        db.commit()
+
+        return jsonify({"msg": "Sucessfull"}), 200
+
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return jsonify({"error": str(e)})
+
+    finally:
+        cur.close()
+        db.close()
+
 @company_bp.route("/applications/<int:job_id>", methods=["GET"])
 @token_required
 @role_required("company")

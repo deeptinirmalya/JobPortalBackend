@@ -36,6 +36,7 @@ from company.routes import company_bp
 from content_post.routes import content_bp
 from problam_practice.routes import problam_bp
 from interview.routes import interview_bp
+from admin.routes import admin_bp
 
 
 app.register_blueprint(auth_bp, url_prefix='/api')
@@ -44,6 +45,7 @@ app.register_blueprint(company_bp, url_prefix='/company')
 app.register_blueprint(content_bp, url_prefix='/content')
 app.register_blueprint(problam_bp, url_prefix='/problem')
 app.register_blueprint(interview_bp, url_prefix='/technical')
+app.register_blueprint(admin_bp, url_prefix='/admin')
 
 
 # -------------------- RATE LIMITER --------------------
@@ -200,7 +202,7 @@ def login():
 
         print(f"\n\nTOKEN CREATED SUCESSFULLY\n\n")
 
-        # send alert in email
+        # # send alert in email
         # try:
         #     response = email_templates.templates.login_alert(current_time_date(),user["full_name"].split()[0])
         #     send_mail(response["subject"], response["body"], user["email"], "html")
