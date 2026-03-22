@@ -14,16 +14,16 @@ logger = get_logger()
 
 
 @interview_bp.route('/interview', methods=['POST'])
-# @token_required
-# @role_required("seeker")
+@token_required
+@role_required("seeker")
 def interview_practice():
     logger.info("Interview Practice End Point Hit")
 
-    access_key = os.getenv("ACCESS_KEY")
+    access_key = os.getenv("INTERVIEW_AI_ACCESS_KEY")
     # print("access key: ",access_key)
 
-    # user_id = request.user_id
-    user_id = 123
+    user_id = request.user_id
+    # user_id = 123
 
     
     data = request.get_json()

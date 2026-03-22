@@ -43,7 +43,7 @@ app.register_blueprint(seeker_bp, url_prefix='/seeker')
 app.register_blueprint(company_bp, url_prefix='/company')
 app.register_blueprint(content_bp, url_prefix='/content')
 app.register_blueprint(problam_bp, url_prefix='/problem')
-app.register_blueprint(interview_bp, url_prefix='/technical_round')
+app.register_blueprint(interview_bp, url_prefix='/technical')
 
 
 # -------------------- RATE LIMITER --------------------
@@ -201,14 +201,14 @@ def login():
         print(f"\n\nTOKEN CREATED SUCESSFULLY\n\n")
 
         # send alert in email
-        try:
-            response = email_templates.templates.login_alert(current_time_date(),user["full_name"].split()[0])
-            send_mail(response["subject"], response["body"], user["email"], "html")
+        # try:
+        #     response = email_templates.templates.login_alert(current_time_date(),user["full_name"].split()[0])
+        #     send_mail(response["subject"], response["body"], user["email"], "html")
             
             
-        except Exception as e:
-            logger.error(f"Email send error: {str(e)}")
-            print("Email failed:", e)
+        # except Exception as e:
+        #     logger.error(f"Email send error: {str(e)}")
+        #     print("Email failed:", e)
 
         return jsonify({
             "token": token,

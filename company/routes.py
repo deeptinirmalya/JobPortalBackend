@@ -245,7 +245,7 @@ def company_jobs():
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("SELECT title, number_of_applications, created_at, close_on FROM jobs WHERE company_id=%s, AND status=%s",(company_id, "open"))
+        cur.execute("SELECT id, title, number_of_applications, created_at, close_on FROM jobs WHERE company_id=%s AND status=%s",(company_id, "open"))
         res = cur.fetchall()
         if res:
             return jsonify({"res": res})
@@ -281,8 +281,9 @@ def applications_per_job(job_id):
             JOIN jobs j ON a.job_id = j.id
             WHERE a.job_id = %s
             AND j.company_id = %s
+            AND a.application_status = %s
             ORDER BY a.applied_at DESC
-        """, (job_id, company_id))
+        """, (job_id, company_id, "applied"))
         res = cur.fetchall()
 
         return jsonify({"res": res})
@@ -295,6 +296,26 @@ def applications_per_job(job_id):
         cur.close()
         db.close()
 
+
+@company_bp.route("/view_resume/<int:application_id>", methods=["GET"])
+@token_required
+@role_required("company")
+def view_resume(application_id):
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+        cur.execute("SELECT resume FROM job_applications WHERE id=%s",(application_id,))
+        res = cur.fetchone()
+        if not res:
+            return jsonify({"err": "application not found"})
+        
+        return jsonify({"res": res["resume"]})
+    except Exception as e:
+        logger.error(f"ERROR {str(e)}")
+        return jsonify({"error": str(e)})
+    finally:
+        cur.close()
+        db.close()
 
 #analzee  aapplication resume :-
 @company_bp.route("/analyze_resume/<int:application_id>", methods = ["GET"])
@@ -316,7 +337,7 @@ def analyze_resume(application_id):
         
         print("application status:  ",res["application_status"])
         
-        cur.execute("SELECT company_id FROM jobs WHERE id=%s",(int(res["job_id"]),))
+        cur.execute("SELECT company_id, skill_need, experience_min FROM jobs WHERE id=%s",(int(res["job_id"]),))
         r = cur.fetchone()
         if r["company_id"] != request.user_id:
             return jsonify({"msg": "not allow"}), 403
@@ -327,7 +348,9 @@ def analyze_resume(application_id):
         
         ressult = analyze_resume_from_url(res["resume"])
 
-        return jsonify({"result": ressult})
+        return jsonify({"result": ressult,
+                        "required_skill": r["skill_need"],
+                        "experience_min": r["experience_min"]})
 
     except Exception as e:
         print("error: ", str(e))
@@ -357,7 +380,7 @@ def approve_application(application_id):
         if not res:
             return jsonify({"error": "APPLICATION_NOT_FOUND"}), 404
         
-        if res["application_status"] == "applied":
+        if res["application_status"] != "applied":
             return jsonify({"msg": "Action Not Allow"}), 403
         
         cur.execute("UPDATE job_applications SET application_status=%s WHERE id=%s",("shortlisted", application_id))
@@ -395,7 +418,7 @@ def reject_application(application_id):
         if not res:
             return jsonify({"error": "APPLICATION_NOT_FOUND"}), 404
         
-        if res["application_status"] == "rejected":
+        if res["application_status"] != "applied":
             return jsonify({"msg": "Action Not Allow"}), 403
                 
         cur.execute("UPDATE job_applications SET application_status=%s WHERE id=%s",("rejected", application_id))
