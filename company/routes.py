@@ -397,6 +397,8 @@ def analyze_resume(application_id):
 def approve_application(application_id):
     logger.info(f"/approve_application/{application_id}")
 
+    company_id = request.user_id
+
     if getattr(request, "status", None) != "verified":
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
     
@@ -405,18 +407,38 @@ def approve_application(application_id):
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("SELECT application_status, job_id FROM job_applications WHERE id=%s",(application_id,))
+        cur.execute("SELECT application_status, job_id, job_seeker_id FROM job_applications WHERE id=%s",(application_id,))
         res = cur.fetchone()
 
         if not res:
             return jsonify({"error": "APPLICATION_NOT_FOUND"}), 404
-        
+
+        cur.execute("SELECT company_id FROM jobs WHERE id=%s",(res["job_id"],))
+        comp_id = cur.fetchone()
+
+        if company_id !=  comp_id["company_id"]:
+            return jsonify({"msg": "Action Not Allow"}), 403
+
         if res["application_status"] != "applied":
             return jsonify({"msg": "Action Not Allow"}), 403
         
         cur.execute("UPDATE job_applications SET application_status=%s WHERE id=%s",("shortlisted", application_id))
         cur.execute("UPDATE jobs SET number_of_applications = GREATEST(number_of_applications - 1, 0) WHERE id=%s",(res["job_id"],))
         db.commit()
+
+        cur.execute("SELECT name FROM company_info WHERE company_id=%s",(company_id,))
+        comp_name = cur.fetchone()
+
+        cur.execute("SELECT name FROM seeker_personal_info WHERE seeker_id=%s",(res["job_seeker_id"],))
+        seeker_name = cur.fetchone()
+
+        try:
+            response = email_templates.templates.resume_shortlisted(seeker_name["name"], comp_name["name"], current_time_date())
+            send_mail(response["subject"], response["body"], res["email"], "html")
+        except Exception as e:
+            logger.error(f"Email send error: {str(e)}")
+            print("Email failed:", e)
+
 
         return jsonify({"msg": "Aproved Sucess full"}), 200
 
@@ -438,17 +460,24 @@ def reject_application(application_id):
 
     if getattr(request, "status", None) != "verified":
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
+    company_id = request.user_id
     
     try:
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
-
-        cur.execute("SELECT application_status, job_id FROM job_applications WHERE id=%s",(application_id,))
+        
+        cur.execute("SELECT application_status, job_id, job_seeker_id FROM job_applications WHERE id=%s",(application_id,))
         res = cur.fetchone()
 
         if not res:
             return jsonify({"error": "APPLICATION_NOT_FOUND"}), 404
-        
+
+        cur.execute("SELECT company_id FROM jobs WHERE id=%s",(res["job_id"],))
+        comp_id = cur.fetchone()
+
+        if company_id !=  comp_id["company_id"]:
+            return jsonify({"msg": "Action Not Allow"}), 403
+
         if res["application_status"] != "applied":
             return jsonify({"msg": "Action Not Allow"}), 403
                 

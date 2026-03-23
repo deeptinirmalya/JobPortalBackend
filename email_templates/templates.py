@@ -757,6 +757,125 @@ def reject_company(name, time, reason):
     }
 
     return result
+
+
+
+
+def resume_shortlisted(name, company_name, time):
+
+    subject = f"Great news, {name}! Your resume was shortlisted by {company_name}"
+    
+    body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background-color: #f0f4f8;
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            }}
+            .email-wrapper {{
+                width: 100%;
+                background-color: #f0f4f8;
+                padding: 40px 0;
+            }}
+            .content-card {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            }}
+            .status-banner {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #ffffff;
+                padding: 40px 20px;
+                text-align: center;
+            }}
+            .main-body {{
+                padding: 40px;
+                color: #2d3748;
+                line-height: 1.8;
+            }}
+            .highlight-text {{
+                color: #5a67d8;
+                font-weight: bold;
+                font-size: 18px;
+            }}
+            .info-badge {{
+                display: inline-block;
+                background: #ebf4ff;
+                color: #2b6cb0;
+                padding: 8px 16px;
+                border-radius: 50px;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 15px 0;
+            }}
+            .next-steps {{
+                background-color: #f7fafc;
+                border-radius: 8px;
+                padding: 20px;
+                margin-top: 25px;
+                border: 1px dashed #cbd5e0;
+            }}
+            .footer {{
+                padding: 25px;
+                text-align: center;
+                font-size: 12px;
+                color: #a0aec0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-wrapper">
+            <div class="content-card">
+                <div class="status-banner">
+                    <h1 style="margin:0; font-size: 28px;">Congratulations!</h1>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9;">You've been shortlisted</p>
+                </div>
+                <div class="main-body">
+                    <p>Hi <strong>{name}</strong>,</p>
+                    
+                    <p>We have exciting news! Your resume has been reviewed and <span class="highlight-text">shortlisted</span> by the hiring team at <strong>{company_name}</strong>.</p>
+                    
+                    <div class="info-badge">
+                        Shortlisted on: {time}
+                    </div>
+
+                    <div class="next-steps">
+                        <h4 style="margin-top:0; color: #4a5568;">What happens next?</h4>
+                        <p style="margin-bottom:0;">The team from <strong>{company_name}</strong> will contact you very soon via your registered email or phone number to discuss the next steps in the interview process.</p>
+                    </div>
+
+                    <p style="margin-top: 30px; text-align: center; font-style: italic; color: #4a5568;">
+                        Keep your phone nearby and your inbox open. Best of luck with your upcoming interview!
+                    </p>
+                    
+                    <p style="margin-top: 40px;">Best regards,<br>
+                    <strong>The HireNest Team</strong></p>
+                </div>
+                <div class="footer">
+                    &copy; 2026 HireNest | Connecting Talent with Opportunity.<br>
+                    You received this because your profile is active on HireNest.
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    result = {
+    "subject": subject,
+    "body": body
+    }
+
+    return result
+    
+    return subject, body
 # Example usage:
 # email_body = company_details_uploaded()
 # send_email(to=company_email, subject="Thank You - Details Uploaded Successfully", body=email_body)
