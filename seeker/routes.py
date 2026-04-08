@@ -369,7 +369,7 @@ def get_seeker_profile():
             academics = acd_info
 
         cur.execute("""
-            SELECT skill, proficiency
+            SELECT id, skill
             FROM seeker_skills
             WHERE seeker_id = %s
         """, (seeker_id,))
@@ -400,7 +400,7 @@ def apply_on_job():
     data = request.get_json()
 
     if not data:
-        return jsonify({"error": "no data present in tha data"})
+        return jsonify({"error": "no data present in the data"})
 
     required_fields = ["job_id", "message", "resume"] #"resume"
     missing = [f for f in required_fields if f not in data or not data[f]]
@@ -463,32 +463,65 @@ def apply_on_job():
         db.close()
 
 
-# delet skill
-@seeker_bp.route('/delete_skill', methods=['DELETE'])
+@seeker_bp.route("/add_skill", methods=["POST"])
 @token_required
 @role_required("seeker")
-def delete_skill():
+def add_skill():
+    data = request.get_json(silent=True)
+    print(data)
+    user_id = request.user_id
+
+    if not data:
+        return jsonify({"error": "skills field required"}), 400
+
+    skill = data["skill"]
+
+    
+    try:
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+        # for skill in skills:
+        cur.execute("INSERT INTO seeker_skills(seeker_id, skill) VALUES (%s, %s)",(user_id, skill))
+        db.commit()
+        print("adde:===>", skill)
+
+        return jsonify({"msg":"Update sucess full"})
+
+    except Exception as e:
+        print("error:", str(e))
+        return jsonify({"error":"update sucess full"})
+    finally:
+        cur.close()
+        db.close()
+
+
+
+# delet skill
+@seeker_bp.route('/delete_skill/<int:skill_id>', methods=['DELETE'])
+@token_required
+@role_required("seeker")
+def delete_skill(skill_id):
 
     if getattr(request, "status", None) != "verified":
         return jsonify({"error": "ACCOUNT_NOT_VERIFIED"}), 403
 
-    data = request.get_json(silent=True)
-    if not data:
-        return jsonify({"message": "All data required"}), 400
+    # data = request.get_json(silent=True)
+    # if not data:
+    #     return jsonify({"message": "All data required"}), 400
     
-    # check the missing value
-    required_fields = ["id"]
-    missing = [f for f in required_fields if f not in data or not data[f]]
-    if missing:
-        return jsonify({"error": "Missing required fields", "fields": missing}), 400
+    # # check the missing value
+    # required_fields = ["id"]
+    # missing = [f for f in required_fields if f not in data or not data[f]]
+    # if missing:
+    #     return jsonify({"error": "Missing required fields", "fields": missing}), 400
 
-    id = data.get("id")
+    # id = data.get("id")
     
     try:
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("DELETE FROM seeker_skills WHERE id=%s AND seeker_id=%s", (id, request.user_id))
+        cur.execute("DELETE FROM seeker_skills WHERE id=%s AND seeker_id=%s", (skill_id, request.user_id))
         
         if cur.rowcount == 0:
             return jsonify({"error": "Skill not found"}), 404
@@ -505,7 +538,7 @@ def delete_skill():
 
 
 
-@seeker_bp.route("/job_openings", methods = ["GET"])
+@seeker_bp.route("/job_openings", methods=["GET"])
 @token_required
 @role_required("seeker")
 def job_openings():
@@ -514,14 +547,71 @@ def job_openings():
         db = get_db_connection()
         cur = db.cursor(dictionary=True)
 
-        cur.execute("SELECT id, title, employment_type, salary_max, number_of_applications FROM jobs WHERE status=%s",("open",))
+        user_id = request.user_id
+
+        # 1. Get user skills
+        cur.execute(
+            "SELECT skill FROM seeker_skills WHERE seeker_id = %s",
+            (user_id,)
+        )
+        skills_data = cur.fetchall()
+        skills = [s["skill"].lower() for s in skills_data]
+
+        # 2. If NO skills → return random jobs
+        if not skills:
+            cur.execute("""
+                SELECT 
+                    id,
+                    title,
+                    employment_type,
+                    salary_max,
+                    experience_min,
+                    location,
+                    number_of_applications
+                FROM jobs
+                WHERE status = 'open'
+                ORDER BY RAND()
+                LIMIT 10
+            """)
+            res = cur.fetchall()
+
+            return jsonify({"type": "random", "jobs": res})
+
+        # 3. Build skill filter
+        skill_conditions = []
+        params = []
+
+        for skill in skills:
+            skill_conditions.append("LOWER(skill_need) LIKE %s")
+            params.append(f"%{skill}%")
+
+        skill_filter = " OR ".join(skill_conditions)
+
+        # 4. Fetch jobs based ONLY on skills
+        query = f"""
+            SELECT 
+                id,
+                title,
+                employment_type,
+                salary_max,
+                experience_min,
+                location,
+                number_of_applications
+            FROM jobs
+            WHERE status = 'open'
+            AND ({skill_filter})
+            LIMIT 10
+        """
+
+        cur.execute(query, params)
         res = cur.fetchall()
 
-        return jsonify({"jobs": res})
+        return jsonify({"type": "skill_based", "jobs": res})
 
     except Exception as e:
         print("error", str(e))
         return jsonify({"error": str(e)})
+
     finally:
         cur.close()
         db.close()

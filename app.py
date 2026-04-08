@@ -102,6 +102,16 @@ def handle_error(e):
 
 # ---------------- HEALTH  ROUT FOE SERVER------------------------------------------------
 
+
+
+
+
+
+# with app.app_context():
+#     for rule in app.url_map.iter_rules():
+#         print(f"Endpoint: {rule.endpoint} \t URL: {rule.rule}")
+
+
 @app.route("/health", methods=["GET"])
 def test_db():
     logger.info("health cheeck")
@@ -202,15 +212,15 @@ def login():
 
         print(f"\n\nTOKEN CREATED SUCESSFULLY\n\n")
 
-        # # send alert in email
-        # try:
-        #     response = email_templates.templates.login_alert(current_time_date(),user["full_name"].split()[0])
-        #     send_mail(response["subject"], response["body"], user["email"], "html")
+        # send alert in email
+        try:
+            response = email_templates.templates.login_alert(current_time_date(),user["full_name"].split()[0])
+            send_mail(response["subject"], response["body"], user["email"], "html")
             
             
-        # except Exception as e:
-        #     logger.error(f"Email send error: {str(e)}")
-        #     print("Email failed:", e)
+        except Exception as e:
+            logger.error(f"Email send error: {str(e)}")
+            print("Email failed:", e)
 
         return jsonify({
             "token": token,
@@ -376,13 +386,14 @@ def logout():
 
 if __name__ == "__main__":
 
-    # app.run(debug=True)
+    app.run(debug=True)
     # app.run(host="127.0.0.1", port=5000, debug=True)
 
 
     # logger.info("Server starting on http://127.0.0.1:5000")
-    print("Server starting on http://127.0.0.1:5000")
-    serve(app, host="127.0.0.1", port=5000)
+
+    # print("Server starting on http://127.0.0.1:5000")
+    # serve(app, host="127.0.0.1", port=5000)
 
     # python -m watchdog.watchmedo auto-restart --patterns="*.py" --recursive -- python app.py   
     # run commant for devlopement

@@ -41,7 +41,7 @@ def company_info():
     cin_number = data.get("cin_number", "").strip()
     gstin = data.get("gstin", "").strip()
     udyam_number = data.get("udyam_number", "").strip()
-    incorporation_certificate = data.get("incorporation_certificate", "")
+    # incorporation_certificate = data.get("incorporation_certificate", "")
     logo = data.get("logo", "")
     about = data.get("about", "").strip()
 
@@ -53,20 +53,20 @@ def company_info():
         if not all([cin_number, gstin]):
             return jsonify({"message": "You must provide both CIN and GSTIN."}), 400
         
-        if not incorporation_certificate:
-            return jsonify({"message": "You must provide incorporation certificate"}), 400
+        # if not incorporation_certificate:
+        #     return jsonify({"message": "You must provide incorporation certificate"}), 400
         
 
     
-    if incorporation_certificate:
-        try:
-            incorporation_certificate_bytes = base64.b64decode(
-                incorporation_certificate, validate=True
-            )
-        except Exception:
-            return jsonify({"error": "INVALID_CERTIFICATE_BASE64"}), 400
-    else:
-        incorporation_certificate_bytes = None
+    # if incorporation_certificate:
+    #     try:
+    #         incorporation_certificate_bytes = base64.b64decode(
+    #             incorporation_certificate, validate=True
+    #         )
+    #     except Exception:
+    #         return jsonify({"error": "INVALID_CERTIFICATE_BASE64"}), 400
+    # else:
+    incorporation_certificate_bytes = None
         
 
     if not logo:
@@ -110,7 +110,7 @@ def company_info():
 
     except Exception as e:
         db.rollback()
-        print(str(e))
+        print("error = ::",str(e))
         return jsonify({"error": str(e)}), 500
     finally:
         cur.close()
